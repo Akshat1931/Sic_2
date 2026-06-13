@@ -1151,7 +1151,7 @@
             <p>Real-time overview of active emergency incidents, stockpiles, and shelter statuses</p>
           </div>
         </div>
-        <button class="btn btn-ghost" onclick="window.open('/api/report/pdf', '_blank')">
+        <button class="btn btn-ghost" onclick="downloadPdfReport()">
           <i data-lucide="file-text" class="btn-svg"></i> Export PDF Report
         </button>
       </div>
@@ -1929,6 +1929,29 @@ function updateSidebarStats() {
 function updateActiveBadge() {
   const a = cachedAnalytics;
   document.getElementById('active-badge').textContent = a.active_incidents ?? 0;
+}
+
+// ── PDF REPORT DOWNLOAD ───────────────────────────────────
+async function downloadPdfReport() {
+  try {
+    const response = await fetch('/api/report/pdf');
+    if (!response.ok) {
+      alert(`Failed to generate PDF: ${response.statusText}`);
+      return;
+    }
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'incident_report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('PDF download error:', error);
+    alert(`Error downloading PDF: ${error.message}`);
+  }
 }
 
 // ── GREEDY ALLOCATION ─────────────────────────────────────
